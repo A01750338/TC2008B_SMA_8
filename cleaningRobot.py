@@ -3,8 +3,14 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 
-def computeCleanedPercentage(self):
-    return (self.areaGrid - self.dirtyNum) * 100 / self.areaGrid
+def computeCleanedPercentage(model):
+    return (model.areaGrid - model.dirtyNum) * 100 / model.areaGrid
+
+def computeTotalMoves(model):
+    return sum([agent.moves for agent in model.schedule.agents])
+
+def computeTotalTime(model):
+    return model.schedule.time
 
 class CleaningModel(mesa.Model):
     def __init__(self, numAgents, gridWidth, gridHeight, maxTime, dirtyPercentage):
@@ -14,7 +20,9 @@ class CleaningModel(mesa.Model):
         self.schedule = mesa.time.RandomActivation(self)
         self.running = True
         self.areaGrid = gridWidth * gridHeight
-        self.dirtyNum = self.areaGrid * (dirtyPercentage/100)
+        self.dirtyNum = int(self.areaGrid * (dirtyPercentage/100))
+        self.maxTime = maxTime
+        self.time = 0
 
         # Crea los agentes
         for i in range(self.numAgents):
@@ -31,36 +39,49 @@ class CleaningModel(mesa.Model):
             y = self.random.randrange(self.grid.height)
             self.grid.place_agent(dirtyCell, (x, y))
 
-        self.maxTime = maxTime
-
         # Guardar los datos de la simulación
         self.datacollector = mesa.datacollection.DataCollector(
-            modelReporters={"Total time": "totalTime", "Total moves": "moves", "Cleaned cells (percentage)": "computeCleanedPercentage"},
-            agentReporters={"Moves": "moves", "Cleaned cells": "cleanedCells"}
+            model_reporters={"Total time": computeTotalTime, "Total moves": computeTotalMoves, "Cleaned cells (percentage)": computeCleanedPercentage},
+            agent_reporters={"Moves": "moves", "Cleaned cells": "cleanedCells"}
         )
 
     def step(self):
+        self.time += 1
         self.schedule.step()
+        self.datacollector.collect(self)
+        if self.dirtyNum == 0 or self.time >= self.maxTime:
+            self.running = False
+
 
 class CleaningAgent(mesa.Agent):
-    def __init__(self, numAgents, uniqueId, model):
+    def __init__(self, uniqueId, model):
         super().__init__(uniqueId, model)
-        # Create the agent's variable and set the initial values.
         self.moves = 0
         self.cleanedCells = 0
-        #self.numAgents = N
-        #self.dirty_percentage
 
+    def move(self):
+        possibleSteps = self.model.grid.get_neighborhood(
+            self.pos, moore=True, include_center=False
+        )
+        newPos = self.random.choice(possibleSteps)
+        self.model.grid.move_agent(self, newPos)
+        self.moves += 1
     
+    def clean(self):
+        cellContent = self.model.grid.get_cell_list_contents([self.pos])
+        for current in cellContent:
+            if isinstance(current, DirtyCell):
+                self.model.schedule.remove_agent(current)
+                self.cleanedCells += 1
+                self.model.dirtyNum -= 1
+
     def step(self):
-        cellContent = self.model.grid.cellContent(self.pos)
-        for elem in cellContent:
-            if type(elem) is DirtyCell:
-                ...
+        self.move()
+        self.clean()
         
 class DirtyCell(mesa.Agent):
-    def __init__(self, uniqueId, model):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
         
-        ...
-
-        
+    # def step(self):
+    #     pass
