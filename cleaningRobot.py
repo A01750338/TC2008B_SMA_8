@@ -41,8 +41,8 @@ class CleaningModel(mesa.Model):
 
         # Guardar los datos de la simulación
         self.datacollector = mesa.datacollection.DataCollector(
-            model_reporters={"Total time": computeTotalTime, "Total moves": computeTotalMoves, "Cleaned cells (percentage)": computeCleanedPercentage},
-            agent_reporters={"Moves": "moves", "Cleaned cells": "cleanedCells"}
+            model_reporters={"Tiempo total": computeTotalTime, "Movimientos totales": computeTotalMoves, "Porcentaje de celdas limpias": computeCleanedPercentage},
+            agent_reporters={"Movimientos": "moves", "Celdas limpias": "cleanedCells", "Celdas sucias": "dirtyNum"}
         )
 
     def step(self):
@@ -71,7 +71,7 @@ class CleaningAgent(mesa.Agent):
         cellContent = self.model.grid.get_cell_list_contents([self.pos])
         for current in cellContent:
             if isinstance(current, DirtyCell):
-                self.model.schedule.remove_agent(current)
+                self.model.grid.remove_agent(current)
                 self.cleanedCells += 1
                 self.model.dirtyNum -= 1
 
@@ -82,6 +82,3 @@ class CleaningAgent(mesa.Agent):
 class DirtyCell(mesa.Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        
-    # def step(self):
-    #     pass
