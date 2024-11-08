@@ -1,7 +1,23 @@
+# Este archivo contiene la configuración de la visualización de la simulación de un robot limpiador.
+# Autores: 
+#       A01749898 - Jennyfer Nahomi Jasso Hernández
+#       A01750338 - Min Che Kim
+# Fecha de creación: 07/10/2024
+# Última modificación: 08/10/2024
+
 from cleaningRobot import mesa, CleaningModel, CleaningAgent, DirtyCell
 import random
 
 def agent_portrayal(agent):
+    """
+    Define la repesentación visual de los agentes en la simulación.
+
+    Params:
+    agent: El agente a representar
+
+    Return:
+    portrayal: Diccionario con la representación visual del agente
+    """
     if isinstance(agent, DirtyCell):
         portrayal = {
             "Shape": "plant.png",
