@@ -1,7 +1,8 @@
 # Este programa contiene la implementación de un modelo de simulación de un robot limpiador de celdas sucias. 
 # Este robot se desplaza en el limite de un grid y limpia las celdas sucias que se encuentre en su camino.
-# Autor: Jennyfer Nahomi Jasso Hernández - A01749898
-# Autor: Min Che Kim - A01750338
+# Autores: 
+#       A01749898 - Jennyfer Nahomi Jasso Hernández
+#       A01750338 - Min Che Kim
 # Fecha de creación: 07/10/2024
 # Última modificación: 08/10/2024
 
