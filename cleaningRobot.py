@@ -95,7 +95,7 @@ class CleaningModel(mesa.Model):
         self.time += 1
         self.schedule.step()
         self.datacollector.collect(self)
-        
+
         # Detiene la simulación si no hay celdas sucias o se alcanza el tiempo máximo
         if self.dirtyNum == 0 or self.time >= self.maxTime:
             self.running = False
@@ -122,8 +122,14 @@ class CleaningAgent(mesa.Agent):
             self.pos, moore=True, include_center=False
         )
         newPos = self.random.choice(possibleSteps)
-        self.model.grid.move_agent(self, newPos)
-        self.moves += 1
+        
+        nextCellContents = self.model.grid.get_cell_list_contents([newPos])
+        
+        if not any(isinstance(agent, CleaningAgent) for agent in nextCellContents):
+            self.model.grid.move_agent(self, newPos)
+            self.moves += 1
+        else:
+            pass
     
     """
     Limpia la celda en la que se encuentra el agente.
