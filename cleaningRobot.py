@@ -8,55 +8,58 @@
 
 import mesa
 
-"""
-    Calcula el porcentaje de celdas limpias después del termino de la simulación.
-
-    Params:
-        model: El modelo de la simulación.
-
-    Return:
-        float: El porcentaje de celdas limpias.
-"""
 def computeCleanedPercentage(model):
+    """
+        Calcula el porcentaje de celdas limpias después del termino de la simulación.
+
+        Params:
+            model: El modelo de la simulación.
+
+        Return:
+            float: El porcentaje de celdas limpias.
+    """
     return (model.areaGrid - model.dirtyNum) * 100 / model.areaGrid
 
-"""
-    Calcula el número total de movimientos realizados por todos los agentes.
-
-    Params:
-        model: El modelo de la simulación.
-
-    Return:
-        int: El número total de movimientos.
-"""
 def computeTotalMoves(model):
+    """
+        Calcula el número total de movimientos realizados por todos los agentes.
+
+        Params:
+            model: El modelo de la simulación.
+
+        Return:
+            int: El número total de movimientos.
+    """
     return sum([agent.moves for agent in model.schedule.agents])
 
-"""
-    Calcula el tiempo total transcurrido en la simulación.
-
-    Params:
-        model: El modelo de la simulación.
-
-    Return:
-        int: El tiempo total transcurrido.
-"""
 def computeTotalTime(model):
+    """
+        Calcula el tiempo total transcurrido en la simulación.
+
+        Params:
+            model: El modelo de la simulación.
+
+        Return:
+            int: El tiempo total transcurrido.
+    """
     return model.schedule.time
 
 class CleaningModel(mesa.Model):
-
     """
-    Modelo de simulación de limpieza.
-
-    Params:
-        numAgents (int): Número de agentes limpiadores.
-        gridWidth (int): Ancho de la cuadrícula.
-        gridHeight (int): Altura de la cuadrícula.
-        maxTime (int): Tiempo máximo de la simulación.
-        dirtyPercentage (float): Porcentaje de celdas sucias al inicio.
+    Clase que representa el modelo de la simulación de un robot limpiador.
     """
+
     def __init__(self, numAgents, gridWidth, gridHeight, maxTime, dirtyPercentage):
+        """
+        Inicializa el modelo de la simulación.
+
+        Params:
+            numAgents (int): Número de agentes limpiadores.
+            gridWidth (int): Ancho de la cuadrícula.
+            gridHeight (int): Altura de la cuadrícula.
+            maxTime (int): Tiempo máximo de la simulación.
+            dirtyPercentage (float): Porcentaje de celdas sucias al inicio.
+        """
         super().__init__()
         self.numAgents = numAgents
         self.grid = mesa.space.MultiGrid(gridWidth, gridHeight, True)
@@ -88,10 +91,10 @@ class CleaningModel(mesa.Model):
             agent_reporters={"Movimientos": "moves", "Celdas limpias": "cleanedCells", "Celdas sucias": "dirtyNum"}
         )
 
-    """
-    Ejecuta un paso de la simulación.
-    """
     def step(self):
+        """
+        Ejecuta un paso de la simulación.
+        """
         self.time += 1
         self.schedule.step()
         self.datacollector.collect(self)
@@ -103,21 +106,25 @@ class CleaningModel(mesa.Model):
 
 class CleaningAgent(mesa.Agent):
     """
-    Agente limpiador.
-
-    Params:
-        uniqueId (int): ID único del agente.
-        model (CleaningModel): El modelo de la simulación.
+    Clase que representa un agente limpiador en la simulación.
     """
+
     def __init__(self, uniqueId, model):
+        """
+        Agente limpiador.
+
+        Params:
+            uniqueId (int): ID único del agente.
+            model (CleaningModel): El modelo de la simulación.
+        """
         super().__init__(uniqueId, model)
         self.moves = 0
         self.cleanedCells = 0
 
-    """
-    Mueve el agente a una nueva posición.
-    """
     def move(self):
+        """
+        Mueve el agente a una nueva posición.
+        """
         possibleSteps = self.model.grid.get_neighborhood(
             self.pos, moore=True, include_center=False
         )
@@ -136,10 +143,10 @@ class CleaningAgent(mesa.Agent):
             self.model.grid.move_agent(self, newPos)
             self.moves += 1
     
-    """
-    Limpia la celda en la que se encuentra el agente.
-    """
     def clean(self):
+        """
+        Limpia la celda en la que se encuentra el agente.
+        """
         cellContent = self.model.grid.get_cell_list_contents([self.pos])
         for current in cellContent:
             # Si la celda es sucia, la limpia
@@ -147,21 +154,24 @@ class CleaningAgent(mesa.Agent):
                 self.model.grid.remove_agent(current)
                 self.cleanedCells += 1
                 self.model.dirtyNum -= 1
-
-    """
-    Ejecuta un paso del agente.
-    """
     def step(self):
+        """
+        Ejecuta un paso del agente.
+        """
         self.move()
         self.clean()
         
 class DirtyCell(mesa.Agent):
     """
-    Celda sucia.
-
-    Params:
-        unique_id (int): ID único de la celda sucia.
-        model (CleaningModel): El modelo de la simulación.
+    Clase que representa una celda sucia en la simulación.
     """
+    
     def __init__(self, unique_id, model):
+        """
+        Celda sucia.
+
+        Params:
+            unique_id (int): ID único de la celda sucia.
+            model (CleaningModel): El modelo de la simulación.
+        """
         super().__init__(unique_id, model)
