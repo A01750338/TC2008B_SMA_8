@@ -121,15 +121,20 @@ class CleaningAgent(mesa.Agent):
         possibleSteps = self.model.grid.get_neighborhood(
             self.pos, moore=True, include_center=False
         )
-        newPos = self.random.choice(possibleSteps)
         
-        nextCellContents = self.model.grid.get_cell_list_contents([newPos])
+        # Filtra las celdas ocupadas por otros agentes
+        filterSteps = []
+        for step in possibleSteps:
+            cellContent = self.model.grid.get_cell_list_contents([step])
+            if not any(isinstance(agent, CleaningAgent) for agent in cellContent):
+                filterSteps.append(step)
+        possibleSteps = filterSteps
         
-        if not any(isinstance(agent, CleaningAgent) for agent in nextCellContents):
+        # Mueve el agente a una nueva posición
+        if possibleSteps:
+            newPos = self.random.choice(possibleSteps)
             self.model.grid.move_agent(self, newPos)
             self.moves += 1
-        else:
-            pass
     
     """
     Limpia la celda en la que se encuentra el agente.
@@ -137,6 +142,7 @@ class CleaningAgent(mesa.Agent):
     def clean(self):
         cellContent = self.model.grid.get_cell_list_contents([self.pos])
         for current in cellContent:
+            # Si la celda es sucia, la limpia
             if isinstance(current, DirtyCell):
                 self.model.grid.remove_agent(current)
                 self.cleanedCells += 1

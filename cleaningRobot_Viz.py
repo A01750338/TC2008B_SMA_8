@@ -6,7 +6,6 @@
 # Última modificación: 08/10/2024
 
 from cleaningRobot import mesa, CleaningModel, CleaningAgent, DirtyCell
-import random
 
 def agent_portrayal(agent):
     """
@@ -54,9 +53,22 @@ totalMovesGraph = mesa.visualization.ChartModule([
     data_collector_name='datacollector'
 )
 
-grid = mesa.visualization.CanvasGrid(agent_portrayal, 10, 10, 500, 500)
+gridWidth = 7
+gridHeight = 20
+baseCanvasSize = 500
+
+# Calcula el tamaño del CanvasGrid para mantener la proporción correcta
+if gridWidth >= gridHeight:
+    canvasWidth = baseCanvasSize
+    canvasHeight = int(baseCanvasSize * (gridHeight / gridWidth))
+else:
+    canvasHeight = baseCanvasSize
+    canvasWidth = int(baseCanvasSize * (gridWidth / gridHeight))
+
+grid = mesa.visualization.CanvasGrid(agent_portrayal, gridWidth, gridHeight, canvasWidth, canvasHeight)
+
 server = mesa.visualization.ModularServer(
-    CleaningModel, [grid, totalTimeGraph, cleanPercentageGraph, totalMovesGraph], "M1 Actividad: Wall-E y su plantita", {"numAgents": 5, "gridWidth": 10, "gridHeight": 10, "maxTime": 120, "dirtyPercentage": 30}
+    CleaningModel, [grid, totalTimeGraph, cleanPercentageGraph, totalMovesGraph], "M1 Actividad: Wall-E y su plantita", {"numAgents": 12, "gridWidth": gridWidth, "gridHeight": gridHeight, "maxTime": 120, "dirtyPercentage": 30}
 )
 server.description = "Jennyfer Nahomi Jasso Hernández - A01749898 / Min Che Kim - A01750338"
 server.port = 8000
